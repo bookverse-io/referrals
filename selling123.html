@@ -1190,6 +1190,55 @@ pdf2htmlEX.defaultViewer = new pdf2htmlEX.Viewer({});
         </div>
     </div>
 
+<!-- Firebase SDKs (Modular ES Modules via CDN) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAgWcu_0cQnv_4ltqeo037xA4jbhkTna20",
+            authDomain: "profits-share.firebaseapp.com",
+            databaseURL: "https://profits-share-default-rtdb.firebaseio.com",
+            projectId: "profits-share",
+            storageBucket: "profits-share.firebasestorage.app",
+            messagingSenderId: "138491671189",
+            appId: "1:138491671189:web:adac95f54ab26835d8e19c",
+            measurementId: "G-28ZS15KEFJ"
+        };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.body.style.visibility = "hidden";
+  });
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists() && userSnap.data().isPaid === true) {
+          console.log("Access granted: User is verified and paid.");
+          document.body.style.visibility = "visible";
+        } else {
+          console.log("Access denied: Payment required.");
+          window.location.href = "https://profitshare-io.github.io/referrals/"; 
+        }
+      } catch (error) {
+        console.error("Error checking subscription status:", error);
+        window.location.href = "https://profitshare-io.github.io/referrals/";
+      }
+    } else {
+      console.log("User is logged out.");
+      window.location.href = "https://profitshare-io.github.io/referrals/";
+    }
+  });
+</script>
+
     <!-- Navigation & Zoom Logic Script -->
     <script>
         const bookContainer = document.getElementById('bookContainer');
