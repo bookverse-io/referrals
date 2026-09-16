@@ -147,6 +147,44 @@
             background-color: #357abd;
         }
 
+        /* Sticky Top Earning Trigger Bar (Controlled via JS class or inline display) */
+        .sticky-earn-banner {
+            position: sticky;
+            top: 73px; /* Positions right below the main sticky navbar */
+            z-index: 99;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 10px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.2);
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+        .sticky-earn-banner:hover {
+            background: linear-gradient(135deg, #219653, #27ae60);
+        }
+        .sticky-earn-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .sticky-earn-btn {
+            background: white;
+            color: #27ae60;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            animation: pulseGlow 2s infinite ease-in-out;
+        }
+
         /* Dropdown Profile Menu */
         .profile-container {
             position: relative;
@@ -187,7 +225,7 @@
         .hero {
             background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
             color: white;
-            padding: 60px 5%;
+            padding: 40px 5%;
             text-align: center;
         }
         .hero h1 { font-size: 2.5rem; margin-bottom: 10px; }
@@ -196,7 +234,7 @@
         .hero-referral {
             background: #238b55;
             color: white;
-            padding: 50px 5%;
+            padding: 40px 5%;
             text-align: center;
         }
         .badge-referral {
@@ -218,7 +256,7 @@
         /* Search & Filter */
         .search-container {
             max-width: 800px;
-            margin: -30px auto 40px auto;
+            margin: 30px auto 40px auto;
             background: white;
             padding: 15px;
             border-radius: 10px;
@@ -504,7 +542,24 @@
             .nav-links.show { display: flex; }
             .nav-links li, .nav-links a { width: 100%; padding: 12px 5%; display: block; }
             .search-container { flex-direction: column; }
+            .sticky-earn-banner { top: 65px; font-size: 0.82rem; padding: 8px 4%; }
         }
+
+        @keyframes pulseGlow {
+          0% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.7);
+          }
+          70% {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 10px rgba(39, 174, 96, 0);
+          }
+          100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(39, 174, 96, 0);
+          }
+        }
+
     </style>
 </head>
 <body>
@@ -542,35 +597,45 @@
         </div>
     </nav>
 
+    <!-- Sticky Top Earning Trigger Bar (Visible ONLY on Home Page) -->
+    <div id="stickyEarnBanner" class="sticky-earn-banner" onclick="navigateTo('earn')">
+        <div class="sticky-earn-content">
+            <i class="fa-solid fa-coins"></i>
+            <span><strong>Want to earn KSh 250?</strong> Invite friends and get referral bonus!</span>
+        </div>
+        <div class="sticky-earn-btn">
+            Earn Now &rarr;
+        </div>
+    </div>
+
     <!-- PAGE 1: HOME SECTION -->
     <div id="homePage" class="page-section active-page">
         <section class="hero">
             <h1>Welcome to BookVerse Digital Library</h1>
-            <p>Explore thousands of free ebooks, audiobooks, and articles anytime, anywhere.</p>
+            <p>Explore amazing ebooks, audiobooks, and articles anytime, anywhere.</p>
         </section>
 
         <form class="search-container" role="search" onsubmit="event.preventDefault();">
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass" style="color: #888;" aria-hidden="true"></i>
-                <input type="text" placeholder="Search by title, author, or ISBN..." aria-label="Search books">
+                <input type="text" id="searchInput" placeholder="Search by title, author, or ISBN..." aria-label="Search books" oninput="filterBooks()">
             </div>
             <div class="filter-box">
-                <select aria-label="Filter by Genre">
-                    <option value="">All Genres</option>
-                    <option value="fiction">Fiction</option>
-                    <option value="non-fiction">Non-Fiction</option>
-                    <option value="sci-fi">Science Fiction</option>
-                    <option value="tech">Technology & Coding</option>
-                    <option value="history">History</option>
+                <select id="genreFilter" aria-label="Filter by Genre" onchange="filterBooks()">
+                    <option value="">All Genres (Business)</option>
+                    <option value="startups">Startups & Entrepreneurship</option>
+                    <option value="marketing">Sales & Marketing</option>
+                    <option value="finance">Business Finance</option>
+                    <option value="leadership">Leadership & Management</option>
                 </select>
             </div>
         </form>
 
         <main class="main-container">
             <h2 class="section-title">Featured Books</h2>
-            <div class="book-grid">
+            <div class="book-grid" id="bookGrid">
                 <!-- Book Card 1 -->
-                <article class="book-card">
+                <article class="book-card" data-genre="marketing" data-title="selling 123" data-author="bookverse">
                     <img src="https://raw.githubusercontent.com/profitshare-io/referrals/main/cover-50kb.jpeg" alt="The Art of Design" class="book-cover">
                     <div class="book-info">
                         <h3 class="book-title">SELLING 123</h3>
@@ -581,7 +646,10 @@
                         </div>
                     </div>
                 </article>
-
+            </div>
+            <!-- Empty state message for other genres -->
+            <div id="noBooksMessage" style="display: none; text-align: center; padding: 40px; color: var(--text-muted); font-size: 1.1rem; font-weight: 500;">
+                No books in this genre at the moment check later.
             </div>
         </main>
     </div>
@@ -590,7 +658,7 @@
     <div id="earnPage" class="page-section">
         <section class="hero-referral">
             <span class="badge-referral">Reader Referral Program</span>
-            <h1>Earn KSh 150</h1>
+            <h1>Earn KSh 250</h1>
             <p>For every friend you invite!</p>
         </section>
 
@@ -605,20 +673,20 @@
             </div>
 
             <div class="link-section-header">
-                <div class="section-subtitle">YOUR BOOKVERSE LINK & MESSAGE</div>
+                <div class="section-subtitle">YOUR UNIQUE INVITE CODE MESSAGE</div>
                 <div id="statusIndicator" class="status-indicator status-locked">🔒 Unactivated</div>
             </div>
 
             <div class="invite-blur-card">
                 <div class="blurred-wrapper">
                     <div class="locked-overlay-box" id="lockedOverlay">
-                        <h4><i class="fa-solid fa-lock"></i> Reader Account Not Activated</h4>
-                        <p>Click below to activate your account and reveal your invite code.</p>
+                        <h4><i class="fa-solid fa-lock"></i> Account Not Activated</h4>
+                        <p>Click below to activate your account and Get your invite code.</p>
                     </div>
                     <div class="blurred-content">
-                        <textarea id="refMessage" style="width:100%; border:none; background:transparent; resize:none; outline:none;" rows="4" readonly>Earn **150KSh** for every friend you invite!
-Sign up here: **https://profitshare-io.github.io/referrals/**
-Use my Invite Code: **USER123**</textarea>
+                        <textarea id="refMessage" style="width:100%; border:none; background:transparent; resize:none; outline:none;" rows="4" readonly>Earn **250KSh** for every friend you invite!
+Sign up: **https://profitshare-io.github.io/referrals/**
+Invite Code: **USER123**</textarea>
                     </div>
                 </div>
             </div>
@@ -708,19 +776,14 @@ Use my Invite Code: **USER123**</textarea>
         <div class="activation-card">
             <button class="close-modal" onclick="closeActivationOverlay()">&times;</button>
             <h2 style="font-size: 1.4rem; color: var(--secondary-color); margin-bottom: 5px;">Activate Your Account</h2>
-            <p style="font-size: 0.85rem; color: var(--text-muted);">Activate to unlock your referral earnings & invite link.</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Get your unique Invite Code.</p>
             
             <div class="steps-box">
-                <strong>Activation Steps:</strong>
-                <ol>
-                    <li>Click the button below to pay the activation fee.</li>
-                    <li>Complete payment via the secure checkout link.</li>
-                    <li>Enter your paid phone number below to confirm.</li>
-                </ol>
+                <strong>Earn <span style="color: #27ae60; font-weight: bold;">250 ksh</span> for every activated friend you referred. </strong>
             </div>
 
-            <button class="auth-btn" style="background-color: #27ae60; margin-bottom: 15px;" onclick="goToPayplusPayment()">
-                💳 Pay Activation Fee via Payplus
+            <button class="auth-btn" style="background-color: #007e35; margin-bottom: 15px;" onclick="goToPayplusPayment()">
+                Continue (650 ksh)
             </button>
 
             <div onclick="toggleManualSection()" style="cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--primary-color); display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -884,12 +947,52 @@ Use my Invite Code: **USER123**</textarea>
             return `${prefix}${randomNum}`;
         }
 
-        // Navigation Router Logic
+        // Functional Search & Filter logic for Business Sub-genres
+        window.filterBooks = function() {
+            const searchInput = document.getElementById('searchInput');
+            const genreSelect = document.getElementById('genreFilter');
+            const bookGrid = document.getElementById('bookGrid');
+            const noBooksMessage = document.getElementById('noBooksMessage');
+
+            if (!searchInput || !genreSelect || !bookGrid) return;
+
+            const query = searchInput.value.toLowerCase().trim();
+            const selectedGenre = genreSelect.value;
+            const bookCards = bookGrid.getElementsByClassName('book-card');
+
+            let visibleCount = 0;
+
+            for (let i = 0; i < bookCards.length; i++) {
+                const card = bookCards[i];
+                const cardGenre = card.getAttribute('data-genre') || '';
+                const title = card.getAttribute('data-title') || '';
+                const author = card.getAttribute('data-author') || '';
+
+                const matchesQuery = title.includes(query) || author.includes(query) || query === '';
+                const matchesGenre = selectedGenre === '' || cardGenre === selectedGenre;
+
+                if (matchesQuery && matchesGenre) {
+                    card.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            }
+
+            if (visibleCount === 0) {
+                noBooksMessage.style.display = 'block';
+            } else {
+                noBooksMessage.style.display = 'none';
+            }
+        };
+
+        // Navigation Router Logic (Also handles showing/hiding the sticky earn banner)
         window.navigateTo = function(page) {
             const homePage = document.getElementById('homePage');
             const earnPage = document.getElementById('earnPage');
             const profilePage = document.getElementById('profilePage');
             const supportPage = document.getElementById('supportPage');
+            const stickyEarnBanner = document.getElementById('stickyEarnBanner');
             
             homePage.classList.remove('active-page');
             earnPage.classList.remove('active-page');
@@ -900,21 +1003,26 @@ Use my Invite Code: **USER123**</textarea>
 
             if (page === 'home') {
                 homePage.classList.add('active-page');
-            } else if (page === 'earn') {
-                earnPage.classList.add('active-page');
-            } else if (page === 'profile') {
-                if (!isLoggedIn) {
-                    openAuthModal('signin');
-                    return;
-                }
-                profilePage.classList.add('active-page');
-            } else if (page === 'support') {
-                supportPage.classList.add('active-page');
-                if (currentUserId) {
-                    fetchUserTickets(currentUserId);
-                }
-                if (currentTicketId) {
-                    loadUserChat(currentTicketId);
+                if (stickyEarnBanner) stickyEarnBanner.style.display = 'flex'; // Visible only on Home
+            } else {
+                if (stickyEarnBanner) stickyEarnBanner.style.display = 'none'; // Hidden on other pages
+
+                if (page === 'earn') {
+                    earnPage.classList.add('active-page');
+                } else if (page === 'profile') {
+                    if (!isLoggedIn) {
+                        openAuthModal('signin');
+                        return;
+                    }
+                    profilePage.classList.add('active-page');
+                } else if (page === 'support') {
+                    supportPage.classList.add('active-page');
+                    if (currentUserId) {
+                        fetchUserTickets(currentUserId);
+                    }
+                    if (currentTicketId) {
+                        loadUserChat(currentTicketId);
+                    }
                 }
             }
             window.scrollTo(0, 0);
@@ -1102,7 +1210,7 @@ Use my Invite Code: **USER123**</textarea>
         };
 
         window.goToPayplusPayment = function() {
-            window.open("https://link.palpluss.com/18d3c74f-d66d-4911-9d5f-bc64c1111669", "_blank");
+            window.open("https://link.palpluss.com/c6a1e9da-811c-4436-9a4e-581f1b289170", "_blank");
         };
 
         window.toggleManualSection = function() {
@@ -1553,7 +1661,7 @@ Use my Invite Code: **USER123**</textarea>
 
                 if (refMessageEl) {
                     const userCodeToUse = code || 'YOUR_CODE';
-                    refMessageEl.value = `Earn **150KSh** for every friend you invite!\nSign up here: **https://profitshare-io.github.io/referrals/**\nUse my Invite Code: **${userCodeToUse}**`;
+                    refMessageEl.value = `Earn **250KSh** for every friend you invite!\nSign up here: **https://profitshare-io.github.io/referrals/**\nUse my Invite Code: **${userCodeToUse}**`;
                 }
             } else {
                 isLoggedIn = false;
@@ -1562,7 +1670,7 @@ Use my Invite Code: **USER123**</textarea>
                 isActivated = false;
 
                 if (refMessageEl) {
-                    refMessageEl.value = `Earn **150KSh** for every friend you invite!\nSign up here: **https://profitshare-io.github.io/referrals/**\nUse my Invite Code: **USER123**`;
+                    refMessageEl.value = `Earn **250KSh** for every friend you invite!\nSign up here: **https://profitshare-io.github.io/referrals/**\nUse my Invite Code: **USER123**`;
                 }
             }
             updateActivationUI();
@@ -1593,18 +1701,15 @@ Use my Invite Code: **USER123**</textarea>
             invitesTabContent.innerHTML = html;
         }
 
- 
-window.openProtectedLink = function(url) {
-    if (!isLoggedIn) {
-        openAuthModal('signin');
-    } else if (isActivated) {
-        // User is logged in and paid/activated, open the link
-        window.open(url, "_blank");
-    } else {
-       openActivationOverlay(); 
-    }
-};
-
+        window.openProtectedLink = function(url) {
+            if (!isLoggedIn) {
+                openAuthModal('signin');
+            } else if (isActivated) {
+                window.open(url, "_blank");
+            } else {
+                openActivationOverlay(); 
+            }
+        };
 
         window.onclick = function(event) {
             if (!event.target.closest('.profile-container')) {
@@ -1627,6 +1732,7 @@ window.openProtectedLink = function(url) {
         // Initializations
         showLoader();
         updateActivationUI();
+        filterBooks();
     </script>
 </body>
 </html>
